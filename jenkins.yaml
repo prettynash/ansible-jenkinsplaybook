@@ -1,0 +1,34 @@
+#------- Downloading the jenkins installer and the jenkins key from the url-------
+  - name: Downloading jenkins installer on all linux(redhat) web-servers #Play 1
+    hosts: all
+    become: yes
+    tasks: 
+      - name: download jenkins .repo file
+        get_url: #alternative of wget module for ansible
+            url:  https://pkg.jenkins.io/redhat-stable/jenkins.repo
+            dest: /etc/yum.repos.d/jenkins.repo
+      - name: Importing jenkins keys fom url
+        rpm_key:
+          state:  present
+          key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+      - name: upgrade packages
+        yum:  
+          name: "*"
+          state:  latest
+      - name: install java
+        yum:
+          name: java-11-amazon-corretto-devel
+          state:  latest
+      - name: install jenkins
+        yum:
+          name: jenkins
+
+  - name: start and enable jenkins #Play 2
+    hosts:  all
+    become: yes
+    tasks:
+      - name: enable jenskins
+        service:
+          name: jenkins
+          enabled: yes
+          state: started
